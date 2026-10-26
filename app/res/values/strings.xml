@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JLauncher</string>
+    <string name="a11y_description">Lets JLauncher\'s quick-menu key work on the home screen: it takes the key and, if the phone also opens its own app for it, sends you back home. It only reacts to that key while JLauncher is showing, and does not read your screen content.</string>
+</resources>

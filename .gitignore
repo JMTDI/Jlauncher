@@ -1,0 +1,8 @@
+# build output
+build/
+# API 34 android.jar (fetched by you, see README)
+android.jar
+# never commit signing material
+*.jks
+*.keystore
+*.b64
