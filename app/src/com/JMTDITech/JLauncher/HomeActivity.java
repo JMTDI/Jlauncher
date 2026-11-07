@@ -215,7 +215,7 @@ public class HomeActivity extends Activity {
             return true;
         }
         if (code == KeyEvent.KEYCODE_CALL) {
-            if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) dial("");
+            if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) openCallLog();
             return true;
         }
         if (Prefs.isQuickMenuKey(this, e)) {
@@ -455,6 +455,16 @@ public class HomeActivity extends Activity {
         } catch (SecurityException e) {
             android.widget.Toast.makeText(this, "Blocked by Do Not Disturb.",
                     android.widget.Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openCallLog() {
+        Intent i = new Intent(Intent.ACTION_VIEW).setType("vnd.android.cursor.dir/calls");
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            startActivity(i);
+        } catch (RuntimeException e) {
+            dial("");
         }
     }
 
