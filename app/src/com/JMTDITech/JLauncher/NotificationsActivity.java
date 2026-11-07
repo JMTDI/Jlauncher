@@ -129,7 +129,17 @@ public class NotificationsActivity extends Activity {
     private void open(StatusBarNotification n) {
         PendingIntent pi = n.getNotification().contentIntent;
         if (pi != null) {
-            try { pi.send(); } catch (PendingIntent.CanceledException ignored) { }
+            try {
+                Bundle opts = null;
+                if (android.os.Build.VERSION.SDK_INT >= 34) {
+                    // Android 14 blocks the app that owns the intent from starting its activity unless the sender allows it.
+                    opts = android.app.ActivityOptions.makeBasic()
+                        .setPendingIntentBackgroundActivityStartMode(
+                            android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+                        .toBundle();
+                }
+                pi.send(this, 0, null, null, null, null, opts);
+            } catch (PendingIntent.CanceledException ignored) { }
         }
         if ((n.getNotification().flags & Notification.FLAG_AUTO_CANCEL) != 0) {
             NotifListener.clear(n.getKey());
