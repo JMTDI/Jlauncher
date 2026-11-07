@@ -214,6 +214,10 @@ public class HomeActivity extends Activity {
             }
             return true;
         }
+        if (code == KeyEvent.KEYCODE_CALL) {
+            if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) dial("");
+            return true;
+        }
         if (Prefs.isQuickMenuKey(this, e)) {
             if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) openApps();
             return true;
