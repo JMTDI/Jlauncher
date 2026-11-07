@@ -4,21 +4,27 @@ A keypad-friendly Android home launcher modelled on a feature-phone launcher.
 Package: `com.JMTDITech.JLauncher` · min SDK 26 · target SDK 34 · plain framework Views, Java 8, no AndroidX.
 
 ## Features
-- **Home:** list mode ("Home Menu", date, carrier, numbered list) and a 2-column icon grid mode.
-- **Keys on Home:** `0-9`, `*`, `#` open the dialer; long-press `#` toggles ringer/vibrate; BACK does nothing.
-- **Quick menu** (Notifications, Quick settings, JLauncher settings), opened by `MENU`, `BOOKMARK`, `NOTIFICATION`, or any key you assign in Settings → *Quick menu key*.
-  - Shown as a full-screen accessibility overlay (or a dialog; Settings → *Quick menu style*).
-  - Notifications / Quick settings first try the phone's own SystemUI screens
-    (`com.android.systemui.ui.NotificationActivity` / `TilesActivity`), then the standard shade via the accessibility service.
-- **Tools** folder (editable list) and **More** folder (all installed apps; icon grid in grid layout, text list in list layout).
-- **Settings** (the app's launcher icon): layout, edit lists, quick-menu key, overlay/dialog, apps to close after the menu key, accessibility, default-launcher request, reset.
+- **Home:** wallpaper screen with carrier, clock and date; a "Notifications" bar at the bottom.
+- **Keys on Home:**
+  - `0-9`, `*`, `#` open the dialer.
+  - Centre key opens the apps list; long-press opens the quick menu.
+  - Soft-left or the Favorites key opens Notifications.
+  - D-pad directions launch a shortcut; long-press one to choose the app.
+  - BACK does nothing.
+- **Apps:** numbered list or 3-column grid (toggle with MENU / SOFT_LEFT / BOOKMARK); digits `1-9` launch entries.
+  Ends with a **More** entry and a **Tools** folder (editable).
+- **More:** icon grid of every app not already in the apps menu. Long-press centre on an app for
+  Add/Remove favorite, App info or Uninstall; favorites are listed first.
+- **Notifications:** own screen (needs notification access). `*` clears the highlighted one, `#` clears all.
+- **Quick menu:** Wi-Fi, Bluetooth, Hotspot (open system settings on Android 10+), Flashlight, Sound mode,
+  Wallpapers (10 built-in, with preview) and Wallpaper from photos (with preview).
+- **Settings** (the app's launcher icon): layout, edit lists, quick-menu key, accessibility, default-launcher request, reset.
 
 ## Accessibility service (optional, recommended)
 Enable *Accessibility → JLauncher*. While the JLauncher home screen is showing it:
-1. takes the quick-menu key before other handlers;
-2. if the phone's firmware also opens its own app for that key (e.g. `com.android.contacts` on the tested phone),
-   shows the menu as an overlay and sends you back Home;
-3. can perform the standard "notifications / quick settings" actions and checks that something opened.
+1. takes the quick-menu and Favorites keys before other handlers;
+2. if the phone's firmware also opens its own app for the quick-menu key (e.g. `com.android.contacts`
+   on the tested phone), sends you back Home.
 
 It reacts only to the quick-menu key and only while JLauncher is showing. It does not read screen content.
 On Android 13+ you may need *App info → ⋮ → Allow restricted settings* first.

@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.JMTDITech.JLauncher"
-    android:versionCode="5"
-    android:versionName="1.4">
+    android:versionCode="37"
+    android:versionName="1.6">
 
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34" />
 
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
@@ -19,6 +22,7 @@
 
         <activity
             android:name=".HomeActivity"
+            android:theme="@android:style/Theme.Material.Wallpaper.NoTitleBar"
             android:exported="true"
             android:launchMode="singleTask"
             android:clearTaskOnLaunch="true"
@@ -46,6 +50,25 @@
             android:name=".FolderActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden|locale|layoutDirection" />
+
+        <activity
+            android:name=".AppsActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden|locale|layoutDirection" />
+
+        <activity
+            android:name=".NotificationsActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden|locale|layoutDirection" />
+
+        <service
+            android:name=".NotifListener"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
 
         <activity
             android:name=".PickAppsActivity"

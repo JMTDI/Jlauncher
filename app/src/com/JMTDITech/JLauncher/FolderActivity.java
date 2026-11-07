@@ -30,7 +30,7 @@ public class FolderActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         more = "more".equals(getIntent().getStringExtra(EXTRA_FOLDER));
-        boolean iconGrid = more && Prefs.layout(this) == Prefs.LAYOUT_GRID;
+        boolean iconGrid = more;
 
         getWindow().setBackgroundDrawable(UI.screenBackground());
         getWindow().setStatusBarColor(UI.NAVY_TOP);
@@ -65,10 +65,49 @@ public class FolderActivity extends Activity {
                 if (pos >= 0 && pos < items.size()) Entries.launch(FolderActivity.this, items.get(pos));
             }
         });
+        if (more) content.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override public boolean onItemLongClick(AdapterView<?> p, View v, int pos, long id) {
+                if (pos < 0 || pos >= items.size()) return false;
+                showAppMenu(items.get(pos));
+                return true;
+            }
+        });
         root.addView(content, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+        LinearLayout bar = UI.softkeyBar(this, "Back", null);
+        bar.getChildAt(0).setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { finish(); }
+        });
+        bar.getChildAt(0).setFocusable(false);
+        root.addView(bar);
         setContentView(root);
         content.requestFocus();
+    }
+
+    private static final String KEY_FAVS = "more_favs";
+
+    private void showAppMenu(final AppItem it) {
+        final List<String> favs = new ArrayList<String>(Prefs.getList(this, KEY_FAVS));
+        final boolean isFav = favs.contains(it.id);
+        String[] opts = { isFav ? "Remove from favorites" : "Add to favorites", "App info", "Uninstall" };
+        new android.app.AlertDialog.Builder(this).setTitle(it.label)
+            .setItems(opts, new android.content.DialogInterface.OnClickListener() {
+                @Override public void onClick(android.content.DialogInterface d, int which) {
+                    String pkg = it.intent.getComponent().getPackageName();
+                    if (which == 0) {
+                        if (isFav) favs.remove(it.id); else favs.add(it.id);
+                        Prefs.setList(FolderActivity.this, KEY_FAVS, favs);
+                        load();
+                    } else if (which == 1) {
+                        startActivity(new android.content.Intent(
+                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            android.net.Uri.parse("package:" + pkg)));
+                    } else {
+                        startActivity(new android.content.Intent(android.content.Intent.ACTION_DELETE,
+                            android.net.Uri.parse("package:" + pkg)));
+                    }
+                }
+            }).show();
     }
 
     @Override
@@ -80,7 +119,17 @@ public class FolderActivity extends Activity {
     private void load() {
         items.clear();
         if (more) {
-            items.addAll(Entries.installedApps(this));
+            java.util.Set<String> shown = new java.util.HashSet<String>();
+            shown.addAll(Prefs.getList(this, Prefs.KEY_HOME_LIST));
+            shown.addAll(Prefs.getList(this, Prefs.KEY_HOME_GRID));
+            shown.addAll(Prefs.getList(this, Prefs.KEY_TOOLS));
+            List<String> favs = Prefs.getList(this, KEY_FAVS);
+            List<AppItem> rest = new ArrayList<AppItem>();
+            for (AppItem it : Entries.installedApps(this)) {
+                if (shown.contains(it.id)) continue;
+                if (favs.contains(it.id)) items.add(it); else rest.add(it);
+            }
+            items.addAll(rest);
         } else {
             items.addAll(Entries.resolveAll(this, Prefs.getList(this, Prefs.KEY_TOOLS)));
         }

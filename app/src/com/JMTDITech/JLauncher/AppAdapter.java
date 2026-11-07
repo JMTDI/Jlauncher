@@ -85,7 +85,7 @@ final class AppAdapter extends BaseAdapter {
 
         h.index = new TextView(ctx);
         h.index.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-        h.index.setTextColor(UI.listRowText());
+        h.index.setTextColor(UI.GRAY_TEXT);
         h.index.setGravity(Gravity.CENTER);
         h.index.setSingleLine(true);
         h.index.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
@@ -102,7 +102,7 @@ final class AppAdapter extends BaseAdapter {
         h.name.setTextColor(UI.listRowText());
         h.name.setSingleLine(true);
         h.name.setEllipsize(TextUtils.TruncateAt.END);
-        h.name.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        h.name.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
         h.name.setDuplicateParentStateEnabled(true);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
@@ -125,7 +125,7 @@ final class AppAdapter extends BaseAdapter {
 
         h.index = new TextView(ctx);
         h.index.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-        h.index.setTextColor(UI.moreRowText());
+        h.index.setTextColor(UI.GRAY_TEXT);
         h.index.setGravity(Gravity.CENTER);
         h.index.setSingleLine(true);
         h.index.setDuplicateParentStateEnabled(true);
@@ -162,13 +162,13 @@ final class AppAdapter extends BaseAdapter {
         plate.setDuplicateParentStateEnabled(true);
         h.icon = new ImageView(ctx);
         h.icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        FrameLayout.LayoutParams ilp = new FrameLayout.LayoutParams(UI.dp(ctx, 56), UI.dp(ctx, 56));
+        FrameLayout.LayoutParams ilp = new FrameLayout.LayoutParams(UI.dp(ctx, 44), UI.dp(ctx, 44));
         ilp.gravity = Gravity.CENTER;
         plate.addView(h.icon, ilp);
-        cell.addView(plate, new LinearLayout.LayoutParams(UI.dp(ctx, 76), UI.dp(ctx, 76)));
+        cell.addView(plate, new LinearLayout.LayoutParams(UI.dp(ctx, 60), UI.dp(ctx, 60)));
 
         h.name = new TextView(ctx);
-        h.name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        h.name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         h.name.setTextColor(UI.WHITE);
         h.name.setGravity(Gravity.CENTER_HORIZONTAL);
         h.name.setMaxLines(2);

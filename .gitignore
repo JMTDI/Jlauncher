@@ -6,3 +6,9 @@ android.jar
 *.jks
 *.keystore
 *.b64
+
+# misc
+*.apk
+*.class
+*.dex
+.DS_Store

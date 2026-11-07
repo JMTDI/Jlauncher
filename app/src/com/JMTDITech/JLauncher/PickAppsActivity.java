@@ -20,6 +20,7 @@ import java.util.Set;
 public class PickAppsActivity extends Activity {
     static final String EXTRA_KEY = "key";
     static final String EXTRA_TITLE = "title";
+    static final String EXTRA_DPAD = "dpad_key";
 
     private final List<AppItem> candidates = new ArrayList<AppItem>();
     private final List<String> picked = new ArrayList<String>();
@@ -73,6 +74,11 @@ public class PickAppsActivity extends Activity {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override public void onItemClick(AdapterView<?> p, View v, int pos, long id) {
                 String entry = candidates.get(pos).id;
+                if (getIntent().hasExtra(EXTRA_DPAD)) {
+                    Prefs.setShortcut(PickAppsActivity.this, getIntent().getIntExtra(EXTRA_DPAD, 0), entry);
+                    finish();
+                    return;
+                }
                 if (!picked.remove(entry)) picked.add(entry);
                 Prefs.setList(PickAppsActivity.this, key, picked);
                 adapter.notifyDataSetChanged();

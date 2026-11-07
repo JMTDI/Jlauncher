@@ -45,15 +45,12 @@ import java.util.List;
  * BACK does nothing here.
  */
 public class HomeActivity extends Activity {
-    private TextView title;
+    private TextView time;
     private TextView date;
     private TextView carrier;
-    private ListView listView;
-    private GridView gridView;
-    private AppAdapter listAdapter;
-    private AppAdapter gridAdapter;
-    private final List<AppItem> items = new ArrayList<AppItem>();
     private boolean poundLong;
+    private boolean dpadLong;
+    private boolean centerLong;
     private boolean receiverRegistered;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -64,104 +61,84 @@ public class HomeActivity extends Activity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
-        getWindow().setBackgroundDrawable(UI.screenBackground());
-        getWindow().setStatusBarColor(UI.NAVY_TOP);
+        getWindow().setStatusBarColor(0xCC0B0D10);
         getWindow().setNavigationBarColor(UI.NAVY_BOTTOM);
         setContentView(buildContent());
-        listAdapter = new AppAdapter(this, items, AppAdapter.STYLE_LIST);
-        gridAdapter = new AppAdapter(this, items, AppAdapter.STYLE_GRID);
-        refresh(true);
-    }
-
-    private View buildContent() {
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-
-        title = UI.title(this, "Home Menu");
-        root.addView(title);
-
-        date = new TextView(this);
-        date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-        date.setTextColor(UI.GRAY_TEXT);
-        date.setGravity(Gravity.CENTER);
-        date.setSingleLine(true);
-        date.setShadowLayer(2f, 1f, 1f, 0x80000000);
-        root.addView(date, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        carrier = new TextView(this);
-        carrier.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        carrier.setTextColor(UI.GRAY_TEXT);
-        carrier.setGravity(Gravity.CENTER);
-        carrier.setSingleLine(true);
-        carrier.setShadowLayer(2f, 1f, 1f, 0x80000000);
-        LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        clp.topMargin = UI.dp(this, 2);
-        clp.bottomMargin = UI.dp(this, 8);
-        root.addView(carrier, clp);
-
-        FrameLayout area = new FrameLayout(this);
-
-        listView = new ListView(this);
-        listView.setDivider(null);
-        listView.setDividerHeight(0);
-        listView.setSelector(new ColorDrawable(0));
-        listView.setVerticalScrollBarEnabled(false);
-        listView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        area.addView(listView, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        gridView = new GridView(this);
-        gridView.setNumColumns(2);
-        gridView.setStretchMode(GridView.STRETCH_COLUMN_WIDTH);
-        gridView.setVerticalSpacing(UI.dp(this, 4));
-        gridView.setSelector(new ColorDrawable(0));
-        gridView.setVerticalScrollBarEnabled(false);
-        gridView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        area.addView(gridView, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        AdapterView.OnItemClickListener click = new AdapterView.OnItemClickListener() {
-            @Override public void onItemClick(AdapterView<?> p, View v, int pos, long id) {
-                if (pos >= 0 && pos < items.size()) Entries.launch(HomeActivity.this, items.get(pos));
-            }
-        };
-        listView.setOnItemClickListener(click);
-        gridView.setOnItemClickListener(click);
-
-        root.addView(area, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
-        return root;
-    }
-
-    /** Reload the active list; keep the highlighted row unless resetSelection is set. */
-    private void refresh(boolean resetSelection) {
-        boolean grid = Prefs.layout(this) == Prefs.LAYOUT_GRID;
-        AbsListView active = grid ? gridView : listView;
-        int keep = resetSelection ? 0 : Math.max(0, active.getSelectedItemPosition());
-
-        items.clear();
-        items.addAll(Entries.resolveAll(this,
-                Prefs.getList(this, grid ? Prefs.KEY_HOME_GRID : Prefs.KEY_HOME_LIST)));
-
-        title.setVisibility(grid ? View.GONE : View.VISIBLE);
-        date.setVisibility(grid ? View.GONE : View.VISIBLE);
-        listView.setVisibility(grid ? View.GONE : View.VISIBLE);
-        gridView.setVisibility(grid ? View.VISIBLE : View.GONE);
-        // Only the visible view holds the adapter, so icons are never shared between two views.
-        listView.setAdapter(grid ? null : listAdapter);
-        gridView.setAdapter(grid ? gridAdapter : null);
-
-        if (!items.isEmpty()) {
-            active.setSelection(Math.min(keep, items.size() - 1));
-        }
-        active.requestFocus();
         updateHeader();
     }
 
+    private TextView overlayText(int sp, int gravity) {
+        TextView t = new TextView(this);
+        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
+        t.setTextColor(0xFFFFFFFF);
+        t.setShadowLayer(6f, 0f, 0f, 0xFF000000);
+        t.setSingleLine(true);
+        t.setGravity(gravity);
+        t.setPadding(UI.dp(this, 6), 0, UI.dp(this, 6), 0);
+        return t;
+    }
+
+    private View buildContent() {
+        FrameLayout root = new FrameLayout(this);
+
+        carrier = overlayText(14, Gravity.END);
+        FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.END);
+        cp.topMargin = UI.dp(this, 6);
+        cp.rightMargin = UI.dp(this, 12);
+        root.addView(carrier, cp);
+
+        LinearLayout clock = new LinearLayout(this);
+        clock.setOrientation(LinearLayout.VERTICAL);
+        clock.setGravity(Gravity.END);
+        time = overlayText(34, Gravity.END);
+        date = overlayText(18, Gravity.END);
+        clock.addView(time);
+        LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dlp.topMargin = UI.dp(this, 4);
+        clock.addView(date, dlp);
+        FrameLayout.LayoutParams kp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END);
+        kp.bottomMargin = UI.dp(this, 46);
+        kp.rightMargin = UI.dp(this, 6);
+        root.addView(clock, kp);
+
+        LinearLayout bar = UI.glyphBar(this, "Notifications", "gridicon", true, true);
+        bar.findViewWithTag("text").setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                startActivity(new Intent(HomeActivity.this, NotificationsActivity.class));
+            }
+        });
+        bar.findViewWithTag("glyph").setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { openApps(); }
+        });
+        bar.findViewWithTag("text").setFocusable(false);
+        bar.findViewWithTag("glyph").setFocusable(false);
+        root.addView(bar, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, UI.dp(this, 38), Gravity.BOTTOM));
+        return root;
+    }
+
+    /** The Favorites key arrives as keycode 318 (scan code 138) on this phone. */
+    static boolean isFavoritesKey(KeyEvent e) {
+        return e.getKeyCode() == 318 || e.getScanCode() == 138;
+    }
+
+    void openNotifications() {
+        startActivity(new Intent(this, NotificationsActivity.class));
+    }
+
+    void openApps() {
+        startActivity(new Intent(this, AppsActivity.class));
+    }
+
     private void updateHeader() {
-        date.setText(DateFormat.format("EEEE, MMM dd", new Date()));
+        Date now = new Date();
+        time.setText(DateFormat.format(DateFormat.is24HourFormat(this) ? "HH:mm" : "h:mm a", now));
+        date.setText(DateFormat.format("EEE, MMM d", now));
         carrier.setText(carrierName());
     }
 
@@ -179,7 +156,7 @@ public class HomeActivity extends Activity {
     protected void onResume() {
         super.onResume();
         visible = this;
-        refresh(false);
+        updateHeader();
         if (!receiverRegistered) {
             IntentFilter f = new IntentFilter();
             f.addAction(Intent.ACTION_TIME_TICK);
@@ -217,24 +194,61 @@ public class HomeActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        refresh(true);
+        updateHeader();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        refresh(false);
+        updateHeader();
     }
 
     // ---- keys -------------------------------------------------------------------------
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
-        if (Prefs.isQuickMenuKey(this, e)) {
-            if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) toggleQuickMenu();
+        int code = e.getKeyCode();
+        if (code == KeyEvent.KEYCODE_SOFT_LEFT || isFavoritesKey(e)) {
+            if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) {
+                openNotifications();
+            }
             return true;
         }
-        int code = e.getKeyCode();
+        if (Prefs.isQuickMenuKey(this, e)) {
+            if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) openApps();
+            return true;
+        }
+        if (code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER) {
+            if (e.getAction() == KeyEvent.ACTION_DOWN) {
+                if (e.getRepeatCount() == 0) {
+                    centerLong = false;
+                } else if (!centerLong) {
+                    centerLong = true;
+                    showQuickMenu();
+                }
+            } else if (e.getAction() == KeyEvent.ACTION_UP && !centerLong) {
+                openApps();
+            }
+            return true;
+        }
+        if (code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN
+                || code == KeyEvent.KEYCODE_DPAD_LEFT || code == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            if (e.getAction() == KeyEvent.ACTION_DOWN) {
+                if (e.getRepeatCount() == 0) {
+                    dpadLong = false;
+                } else if (!dpadLong) {
+                    dpadLong = true;
+                    startActivity(new Intent(this, PickAppsActivity.class)
+                            .putExtra(PickAppsActivity.EXTRA_DPAD, code)
+                            .putExtra(PickAppsActivity.EXTRA_TITLE, "Set shortcut"));
+                }
+            } else if (e.getAction() == KeyEvent.ACTION_UP && !dpadLong) {
+                String id = Prefs.shortcut(this, code);
+                AppItem it = id == null ? null : Entries.resolve(this, id);
+                if (it != null) Entries.launch(this, it);
+            }
+            return true;
+        }
         boolean digit = code >= KeyEvent.KEYCODE_0 && code <= KeyEvent.KEYCODE_9;
         boolean star = code == KeyEvent.KEYCODE_STAR;
         boolean pound = code == KeyEvent.KEYCODE_POUND;
@@ -293,78 +307,151 @@ public class HomeActivity extends Activity {
         }
     }
 
-    static final String[] QUICK_LABELS = {"Notifications", "Quick settings", "JLauncher settings"};
+    private String[] quickLabels() {
+        android.net.wifi.WifiManager wm = (android.net.wifi.WifiManager)
+                getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        android.bluetooth.BluetoothAdapter bt = android.bluetooth.BluetoothAdapter.getDefaultAdapter();
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        int mode = am == null ? AudioManager.RINGER_MODE_NORMAL : am.getRingerMode();
+        String sound = mode == AudioManager.RINGER_MODE_NORMAL ? "Sound"
+                : mode == AudioManager.RINGER_MODE_VIBRATE ? "Vibrate" : "Silent";
+        return new String[] {
+                "Wi-Fi: " + (wm != null && wm.isWifiEnabled() ? "On" : "Off"),
+                "Bluetooth: " + (bt != null && bt.isEnabled() ? "On" : "Off"),
+                "Hotspot",
+                "Flashlight",
+                "Sound: " + sound,
+                "Wallpapers",
+                "Wallpaper from photos"};
+    }
 
     private void showQuickMenu() {
-        quickDialog = new AlertDialog.Builder(this)
+        quickDialog = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                 .setTitle("Quick menu")
-                .setItems(QUICK_LABELS, new DialogInterface.OnClickListener() {
+                .setItems(quickLabels(), new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface d, int which) {
-                        runQuickAction(which);
+                        runQuickToggle(which);
                     }
                 })
                 .show();
     }
 
-    /** Run one quick-menu entry (also called by the overlay menu). */
-    void runQuickAction(int which) {
-        if (which == 0) openShade(false);
-        else if (which == 1) openShade(true);
-        else startActivity(new Intent(this, SettingsActivity.class));
+    // Android 10+ stops apps switching radios directly, so those open the system screen.
+    private void runQuickToggle(int which) {
+        try {
+            switch (which) {
+                case 0: startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)); break;
+                case 1: startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)); break;
+                case 2:
+                    try {
+                        startActivity(new Intent().setClassName("com.android.settings",
+                                "com.android.settings.TetherSettings"));
+                    } catch (RuntimeException e) {
+                        startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
+                    }
+                    break;
+                case 3: startActivity(new Intent(this, TorchActivity.class)); break;
+                case 4: cycleSound(); break;
+                case 5:
+                    showWallpaperList();
+                    break;
+                default:
+                    startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                            .addCategory(Intent.CATEGORY_OPENABLE).setType("image/*"), 77);
+            }
+        } catch (RuntimeException e) {
+            android.widget.Toast.makeText(this, "Not available.", android.widget.Toast.LENGTH_SHORT).show();
+        }
     }
 
-    /**
-     * 1) the phone's own SystemUI screen (what the original launcher used);
-     * 2) the standard shade through the accessibility service, checking that something opened;
-     * 3) otherwise explain what is missing instead of failing silently.
-     */
-    private void openShade(final boolean quick) {
-        // Let the menu dialog finish closing first.
-        handler.postDelayed(new Runnable() {
-            @Override public void run() {
-                final String why = SystemShade.tryOpen(HomeActivity.this, quick);
-                if (why == null) return;
-                if (!NotificationService.isConnected()) {
-                    promptAccessibility(why);
-                    return;
-                }
-                final long before = NotificationService.lastWindowEventTime();
-                final boolean accepted = NotificationService.performShadeAction(quick);
-                handler.postDelayed(new Runnable() {
-                    @Override public void run() {
-                        if (!accepted || NotificationService.lastWindowEventTime() == before) {
-                            showFailure(quick, why);
+    @Override
+    protected void onActivityResult(int req, int res, Intent data) {
+        super.onActivityResult(req, res, data);
+        if (req != 77 || res != RESULT_OK || data == null || data.getData() == null) return;
+        showWallpaperPreview(-1, data.getData());
+    }
+
+    private void showWallpaperList() {
+        showWallpaperPreview(0, null);
+    }
+
+    private int wpIndex;
+
+    private android.graphics.Bitmap previewBitmap(int idx, android.net.Uri photo) {
+        android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+        try {
+            if (photo == null) return Wallpapers.render(idx, dm.widthPixels / 3, dm.heightPixels / 3);
+            android.graphics.BitmapFactory.Options o = new android.graphics.BitmapFactory.Options();
+            o.inSampleSize = 4;
+            java.io.InputStream in = getContentResolver().openInputStream(photo);
+            android.graphics.Bitmap b = android.graphics.BitmapFactory.decodeStream(in, null, o);
+            in.close();
+            return b;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // photo == null browses the built-in set with left/right; otherwise previews that photo.
+    private void showWallpaperPreview(int start, final android.net.Uri photo) {
+        wpIndex = start;
+        final android.widget.ImageView iv = new android.widget.ImageView(this);
+        iv.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+        iv.setMinimumHeight(UI.dp(this, 300));
+        iv.setImageBitmap(previewBitmap(wpIndex, photo));
+        final AlertDialog dlg = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(photo == null ? Wallpapers.NAMES[wpIndex] : "Preview")
+                .setView(iv)
+                .setPositiveButton("Set (home + lock)", new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface d, int w) {
+                        try {
+                            android.app.WallpaperManager wm = android.app.WallpaperManager.getInstance(HomeActivity.this);
+                            if (photo == null) {
+                                android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+                                wm.setBitmap(Wallpapers.render(wpIndex, dm.widthPixels, dm.heightPixels), null, true,
+                                        android.app.WallpaperManager.FLAG_SYSTEM | android.app.WallpaperManager.FLAG_LOCK);
+                            } else {
+                                java.io.InputStream in = getContentResolver().openInputStream(photo);
+                                wm.setStream(in, null, true, android.app.WallpaperManager.FLAG_SYSTEM | android.app.WallpaperManager.FLAG_LOCK);
+                                in.close();
+                            }
+                        } catch (Exception e) {
+                            android.widget.Toast.makeText(HomeActivity.this, "Could not set wallpaper.",
+                                    android.widget.Toast.LENGTH_SHORT).show();
                         }
                     }
-                }, 900);
-            }
-        }, 150);
-    }
-
-    private void promptAccessibility(String why) {
-        new AlertDialog.Builder(this)
-                .setTitle("Couldn't open it directly")
-                .setMessage("The phone's own screen for this didn't open (" + why + ").\n\n"
-                        + "Turn on the JLauncher accessibility service and JLauncher can try the "
-                        + "standard shade instead. It also helps the quick-menu key work without "
-                        + "also triggering the phone's own action for that key.")
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Open settings", new DialogInterface.OnClickListener() {
-                    @Override public void onClick(DialogInterface d, int w) {
-                        startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
-                    }
                 })
-                .show();
+                .setNegativeButton("Cancel", null)
+                .create();
+        if (photo == null) {
+            dlg.setButton(AlertDialog.BUTTON_NEUTRAL, "Next", (DialogInterface.OnClickListener) null);
+        }
+        dlg.show();
+        if (photo == null) {
+            final int n = Wallpapers.NAMES.length;
+            dlg.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View v) {
+                    wpIndex = (wpIndex + 1) % n;
+                    iv.setImageBitmap(previewBitmap(wpIndex, null));
+                    dlg.setTitle(Wallpapers.NAMES[wpIndex]);
+                }
+            });
+        }
     }
 
-    private void showFailure(boolean quick, String why) {
-        new AlertDialog.Builder(this)
-                .setTitle("Nothing opened")
-                .setMessage("The phone's own " + (quick ? "quick settings" : "notifications")
-                        + " screen didn't open (" + why + "), and the standard shade didn't "
-                        + "respond either. This phone may only allow its own apps to open it.")
-                .setPositiveButton("OK", null)
-                .show();
+    private void cycleSound() {
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (am == null) return;
+        int next = am.getRingerMode() == AudioManager.RINGER_MODE_NORMAL
+                ? AudioManager.RINGER_MODE_VIBRATE
+                : am.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE
+                        ? AudioManager.RINGER_MODE_SILENT : AudioManager.RINGER_MODE_NORMAL;
+        try {
+            am.setRingerMode(next);
+        } catch (SecurityException e) {
+            android.widget.Toast.makeText(this, "Blocked by Do Not Disturb.",
+                    android.widget.Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void dial(String number) {

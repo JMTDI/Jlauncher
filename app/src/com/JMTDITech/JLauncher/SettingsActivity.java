@@ -37,12 +37,11 @@ public class SettingsActivity extends Activity {
     private static final int ROW_HOME_GRID = 2;
     private static final int ROW_TOOLS = 3;
     private static final int ROW_MENU_KEY = 4;
-    private static final int ROW_MENU_STYLE = 5;
-    private static final int ROW_CLOSE_PKGS = 6;
-    private static final int ROW_ACCESSIBILITY = 7;
-    private static final int ROW_DEFAULT = 8;
-    private static final int ROW_RESET = 9;
-    private static final int ROW_COUNT = 10;
+    private static final int ROW_CLOSE_PKGS = 5;
+    private static final int ROW_ACCESSIBILITY = 6;
+    private static final int ROW_DEFAULT = 7;
+    private static final int ROW_RESET = 8;
+    private static final int ROW_COUNT = 9;
 
     private BaseAdapter adapter;
 
@@ -98,9 +97,6 @@ public class SettingsActivity extends Activity {
                 break;
             case ROW_MENU_KEY:
                 captureMenuKey();
-                break;
-            case ROW_MENU_STYLE:
-                Prefs.setOverlayMenu(this, !Prefs.overlayMenu(this));
                 break;
             case ROW_CLOSE_PKGS:
                 editClosePackages();
@@ -221,7 +217,6 @@ public class SettingsActivity extends Activity {
             case ROW_HOME_GRID: return "Edit home grid";
             case ROW_TOOLS: return "Edit Tools folder";
             case ROW_MENU_KEY: return "Quick menu key";
-            case ROW_MENU_STYLE: return "Quick menu style";
             case ROW_CLOSE_PKGS: return "Close app opened by menu key";
             case ROW_ACCESSIBILITY: return "Accessibility service";
             case ROW_DEFAULT: return "Default launcher";
@@ -242,10 +237,6 @@ public class SettingsActivity extends Activity {
                 return Prefs.getList(this, Prefs.KEY_TOOLS).size() + " entries";
             case ROW_MENU_KEY:
                 return Prefs.describeMenuKey(this);
-            case ROW_MENU_STYLE:
-                return Prefs.overlayMenu(this)
-                        ? "Overlay: covers the phone's own app opening (needs the accessibility service)"
-                        : "Dialog: inside JLauncher";
             case ROW_CLOSE_PKGS: {
                 List<String> l = Prefs.closePackages(this);
                 return l.isEmpty() ? "None" : TextUtils.join(", ", l);

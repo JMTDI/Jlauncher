@@ -14,7 +14,7 @@ rm -rf "$OUT" && mkdir -p "$OUT/classes" "$OUT/gen"
 echo "[1/6] resources + manifest"
 aapt package -f -m -J "$OUT/gen" -M app/AndroidManifest.xml -S app/res \
      -I "$ANDROID_JAR" --min-sdk-version 26 --target-sdk-version 34 \
-     --version-code 5 --version-name 1.4 -F "$OUT/unsigned-res.apk"
+     -F "$OUT/unsigned-res.apk"
 
 echo "[2/6] compile"
 # No lambdas: dx cannot desugar them. Java 8 bytecode only.

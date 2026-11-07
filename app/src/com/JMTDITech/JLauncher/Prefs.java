@@ -18,7 +18,6 @@ final class Prefs {
     static final String KEY_TOOLS = "tools_list";
     static final String KEY_MENU_KEY = "quick_menu_key";
     static final String KEY_CLOSE_PKGS = "close_after_menu_key";
-    static final String KEY_OVERLAY = "overlay_menu";
 
     private Prefs() {}
 
@@ -44,6 +43,7 @@ final class Prefs {
     /** True if this key event should open the quick menu (default keys or the learned key). */
     static boolean isQuickMenuKey(Context c, KeyEvent e) {
         int code = e.getKeyCode();
+        if (code == KeyEvent.KEYCODE_SOFT_LEFT) return false;
         if (isDefaultMenuKey(code)) return true;
         String s = sp(c).getString(KEY_MENU_KEY, null);
         if (s == null) return false;
@@ -132,13 +132,12 @@ final class Prefs {
         sp(c).edit().putString(KEY_CLOSE_PKGS, sb.toString()).apply();
     }
 
-    /** Quick menu as a full-screen overlay (needs the accessibility service) instead of a dialog. */
-    static boolean overlayMenu(Context c) {
-        return sp(c).getBoolean(KEY_OVERLAY, true);
+    static String shortcut(Context c, int keyCode) {
+        return sp(c).getString("dpad_" + keyCode, null);
     }
 
-    static void setOverlayMenu(Context c, boolean on) {
-        sp(c).edit().putBoolean(KEY_OVERLAY, on).apply();
+    static void setShortcut(Context c, int keyCode, String id) {
+        sp(c).edit().putString("dpad_" + keyCode, id).apply();
     }
 
     static List<String> getList(Context c, String key) {
@@ -166,6 +165,7 @@ final class Prefs {
             return new ArrayList<String>(Arrays.asList(
                     "std:contacts", "std:messages", "std:calls", "std:more"));
         }
+        if ("more_favs".equals(key)) return new ArrayList<String>();
         if (KEY_TOOLS.equals(key)) {
             return new ArrayList<String>(Arrays.asList(
                     "std:calculator", "std:clock", "std:flashlight", "std:calendar",

@@ -28,6 +28,32 @@ final class GlyphDrawable extends Drawable {
         float cx = l + w / 2f;
         float cy = t + h / 2f;
 
+        if ("gridicon".equals(kind) || "listicon".equals(kind)) {
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(0xFFD0D3DA);
+            if ("gridicon".equals(kind)) {
+                float s = w * 0.38f;
+                float g = w * 0.08f;
+                float x0 = cx - (2 * s + g) / 2f;
+                float y0 = cy - (2 * s + g) / 2f;
+                for (int i = 0; i < 2; i++) {
+                    for (int j = 0; j < 2; j++) {
+                        float x = x0 + i * (s + g);
+                        float y = y0 + j * (s + g);
+                        c.drawRoundRect(new RectF(x, y, x + s, y + s), s * 0.3f, s * 0.3f, p);
+                    }
+                }
+            } else {
+                float rh = w * 0.2f;
+                for (int k = 0; k < 3; k++) {
+                    float y = t + w * 0.08f + k * w * 0.32f;
+                    c.drawRoundRect(new RectF(l + w * 0.05f, y, l + w * 0.25f, y + rh), rh * 0.3f, rh * 0.3f, p);
+                    c.drawRoundRect(new RectF(l + w * 0.33f, y, l + w * 0.95f, y + rh), rh * 0.3f, rh * 0.3f, p);
+                }
+            }
+            return;
+        }
+
         int bg;
         if ("tools".equals(kind)) bg = 0xFF43A047;
         else if ("flashlight".equals(kind)) bg = 0xFFF9A825;
